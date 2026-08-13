@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" role="img" aria-labelledby="title desc">
+<title id="title">MarketRZ</title>
+<desc id="desc">Logo MarketRZ, tecnología, productos y oportunidades</desc>
+<defs>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#5aa7ff"/>
+    <stop offset="1" stop-color="#1257b8"/>
+  </linearGradient>
+</defs>
+<rect x="8" y="8" width="204" height="204" rx="48" fill="url(#g)"/>
+<path d="M52 158V62h27l28 43 28-43h27v96h-27v-55l-28 42-28-42v55H52z" fill="#fff"/>
+<path d="M171 44l-17 43h17l-12 38 37-52h-18l16-29z" fill="#ff9d3d"/>
+<text x="240" y="112" font-family="Arial,Helvetica,sans-serif" font-size="72" font-weight="800" fill="#ffffff">Market<tspan fill="#dcecff">RZ</tspan></text>
+<text x="244" y="157" font-family="Arial,Helvetica,sans-serif" font-size="25" font-weight="500" fill="#dcecff">TECNOLOGÍA · PRODUCTOS · OPORTUNIDADES</text>
+</svg>
