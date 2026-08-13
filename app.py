@@ -9,8 +9,8 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-CLIENT_ID = os.environ.get("MELI_CLIENT_ID")
-CLIENT_SECRET = os.environ.get("MELI_CLIENT_SECRET")
+CLIENT_ID =  "6535647082019046"
+CLIENT_SECRET = "yNeC9jzE4rr056hSoXHggWmH5H0TTDyX"
 REDIRECT_URI = "https://marketrz-callback.onrender.com/callback"
 
 code_verifier = secrets.token_urlsafe(64)
