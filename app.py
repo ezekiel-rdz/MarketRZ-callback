@@ -2,30 +2,40 @@ import os
 import base64
 import hashlib
 import secrets
+import re
 
 import requests
 from flask import Flask, request
 
 app = Flask(__name__)
 
-CLIENT_ID = "6535647082019046"
-CLIENT_SECRET = "yNeC9jzE4rr056hSoXHggWmH5H0TTDyX"
+CLIENT_ID = os.environ.get("MELI_CLIENT_ID")
+CLIENT_SECRET = os.environ.get("MELI_CLIENT_SECRET")
 REDIRECT_URI = "https://marketrz-callback.onrender.com/callback"
 
-# Guardamos temporalmente el code_verifier para la prueba
 code_verifier = secrets.token_urlsafe(64)
+
 
 def crear_code_challenge(verifier):
     digest = hashlib.sha256(verifier.encode("utf-8")).digest()
     return base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
 
+
 @app.route("/")
 def inicio():
     return """
-    <h1>MarketRZ</h1>
+    <h1>🛒 MarketRZ</h1>
     <p>El callback está funcionando correctamente.</p>
-    <p><a href="/login">Conectar Mercado Libre</a></p>
+
+    <p>
+        <a href="/login">🔐 Conectar Mercado Libre</a>
+    </p>
+
+    <p>
+        <a href="/promocionar">📦 Analizar producto</a>
+    </p>
     """
+
 
 @app.route("/login")
 def login():
@@ -50,6 +60,7 @@ def login():
         </body>
     </html>
     """
+
 
 @app.route("/callback")
 def callback():
@@ -98,28 +109,29 @@ def callback():
         <pre>{response.text}</pre>
         """
 
-    token_data = response.json()
-
-    # IMPORTANTE:
-    # No mostramos el access_token ni el refresh_token en pantalla.
     return """
-    <h1>¡Mercado Libre conectado correctamente!</h1>
-    <p>MarketRZ recibió la autorización y obtuvo el acceso correctamente.</p>
-    <p>Ya podemos continuar con la integración.</p>
+    <h1>✅ Mercado Libre conectado correctamente</h1>
+    <p>MarketRZ recibió la autorización correctamente.</p>
+    <p><a href="/promocionar">📦 Analizar un producto</a></p>
     """
+
+
 @app.route("/promocionar", methods=["GET", "POST"])
 def promocionar():
+
     if request.method == "GET":
         return """
         <html>
         <head>
             <title>MarketRZ - Analizar producto</title>
         </head>
+
         <body>
             <h1>🛒 MarketRZ</h1>
             <h2>Analizar producto de Mercado Libre</h2>
 
             <form method="POST">
+
                 <input
                     type="url"
                     name="url"
@@ -133,6 +145,7 @@ def promocionar():
                 <button type="submit">
                     🔍 Analizar producto
                 </button>
+
             </form>
         </body>
         </html>
@@ -140,63 +153,116 @@ def promocionar():
 
     url = request.form.get("url", "").strip()
 
-    # Buscar el ID de la publicación
     match = re.search(r"(MLA\d+)", url, re.IGNORECASE)
 
     if not match:
         return """
         <h1>❌ No pude encontrar la publicación</h1>
-        <p>Verificá que hayas pegado un enlace válido de Mercado Libre.</p>
+
+        <p>
+        Verificá que hayas pegado un enlace válido de Mercado Libre.
+        </p>
+
         <a href="/promocionar">Volver</a>
         """
 
     item_id = match.group(1).upper()
 
-    # Consultar información pública de Mercado Libre
     api_url = f"https://api.mercadolibre.com/items/{item_id}"
 
     try:
-        response = requests.get(api_url, timeout=15)
+        response = requests.get(
+            api_url,
+            timeout=15
+        )
+
     except requests.RequestException:
         return """
         <h1>❌ Error de conexión</h1>
-        <p>MarketRZ no pudo comunicarse con Mercado Libre.</p>
+
+        <p>
+        MarketRZ no pudo comunicarse con Mercado Libre.
+        </p>
+
         <a href="/promocionar">Volver</a>
         """
 
     if response.status_code != 200:
         return f"""
         <h1>❌ No se pudo obtener el producto</h1>
-        <p>Código de respuesta: {response.status_code}</p>
+
+        <p>
+        Código de respuesta: {response.status_code}
+        </p>
+
         <a href="/promocionar">Volver</a>
         """
 
     producto = response.json()
 
-    titulo = producto.get("title", "Sin título")
-    precio = producto.get("price", "No disponible")
-    moneda = producto.get("currency_id", "")
-    condicion = producto.get("condition", "No disponible")
-    categoria = producto.get("category_id", "No disponible")
+    titulo = producto.get(
+        "title",
+        "Sin título"
+    )
+
+    precio = producto.get(
+        "price",
+        "No disponible"
+    )
+
+    moneda = producto.get(
+        "currency_id",
+        ""
+    )
+
+    condicion = producto.get(
+        "condition",
+        "No disponible"
+    )
+
+    categoria = producto.get(
+        "category_id",
+        "No disponible"
+    )
+
     imagen = ""
 
-    pictures = producto.get("pictures", [])
+    pictures = producto.get(
+        "pictures",
+        []
+    )
 
     if pictures:
-        imagen = pictures[0].get("secure_url") or pictures[0].get("url", "")
+        imagen = (
+            pictures[0].get("secure_url")
+            or pictures[0].get("url", "")
+        )
+
+    imagen_html = ""
+
+    if imagen:
+        imagen_html = f"""
+        <img
+            src="{imagen}"
+            width="300"
+            alt="Producto"
+        >
+        """
 
     return f"""
     <html>
+
     <head>
         <title>MarketRZ - Producto</title>
     </head>
 
     <body>
+
         <h1>🛒 MarketRZ</h1>
 
         <h2>{titulo}</h2>
 
-        {"<img src='" + imagen + "' width='300'>" if imagen else ""}
+        {imagen_html}
 
         <h3>💰 Precio</h3>
         <p>{precio} {moneda}</p>
@@ -208,8 +274,12 @@ def promocionar():
         <p>{categoria}</p>
 
         <h3>🔗 Publicación</h3>
+
         <p>
-            <a href="{url}" target="_blank">
+            <a
+                href="{url}"
+                target="_blank"
+            >
                 Ver producto en Mercado Libre
             </a>
         </p>
@@ -219,9 +289,15 @@ def promocionar():
         <a href="/promocionar">
             🔄 Analizar otro producto
         </a>
+
     </body>
+
     </html>
     """
-import re
-from urllib.parse import urlparse == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+
+
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=10000
+    )
