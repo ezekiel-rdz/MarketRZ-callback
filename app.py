@@ -9,11 +9,14 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-CLIENT_ID =  "6535647082019046"
+CLIENT_ID = "6535647082019046"
 CLIENT_SECRET = "yNeC9jzE4rr056hSoXHggWmH5H0TTDyX"
 REDIRECT_URI = "https://marketrz-callback.onrender.com/callback"
 
 code_verifier = secrets.token_urlsafe(64)
+
+# Token temporal de Mercado Libre
+access_token = None
 
 
 def crear_code_challenge(verifier):
@@ -25,6 +28,7 @@ def crear_code_challenge(verifier):
 def inicio():
     return """
     <h1>🛒 MarketRZ</h1>
+
     <p>El callback está funcionando correctamente.</p>
 
     <p>
@@ -55,6 +59,7 @@ def login():
         <head>
             <meta http-equiv="refresh" content="0; url={url}">
         </head>
+
         <body>
             <p>Redirigiendo a Mercado Libre...</p>
         </body>
@@ -64,6 +69,8 @@ def login():
 
 @app.route("/callback")
 def callback():
+    global access_token
+
     code = request.args.get("code")
     error = request.args.get("error")
 
@@ -103,16 +110,32 @@ def callback():
 
     if response.status_code != 200:
         return f"""
-        <h1>MarketRZ</h1>
-        <p>Error al obtener el token.</p>
+        <h1>❌ Error al obtener el token</h1>
         <p>Código HTTP: {response.status_code}</p>
         <pre>{response.text}</pre>
         """
 
+    token_data = response.json()
+
+    access_token = token_data.get("access_token")
+
+    if not access_token:
+        return """
+        <h1>❌ No se recibió el token</h1>
+        """
+
     return """
     <h1>✅ Mercado Libre conectado correctamente</h1>
-    <p>MarketRZ recibió la autorización correctamente.</p>
-    <p><a href="/promocionar">📦 Analizar un producto</a></p>
+
+    <p>
+        MarketRZ recibió la autorización correctamente.
+    </p>
+
+    <p>
+        <a href="/promocionar">
+            📦 Analizar un producto
+        </a>
+    </p>
     """
 
 
@@ -122,12 +145,15 @@ def promocionar():
     if request.method == "GET":
         return """
         <html>
+
         <head>
             <title>MarketRZ - Analizar producto</title>
         </head>
 
         <body>
+
             <h1>🛒 MarketRZ</h1>
+
             <h2>Analizar producto de Mercado Libre</h2>
 
             <form method="POST">
@@ -147,13 +173,19 @@ def promocionar():
                 </button>
 
             </form>
+
         </body>
+
         </html>
         """
 
     url = request.form.get("url", "").strip()
 
-    match = re.search(r"(MLA\d+)", url, re.IGNORECASE)
+    match = re.search(
+        r"(MLA\d+)",
+        url,
+        re.IGNORECASE
+    )
 
     if not match:
         return """
@@ -163,17 +195,40 @@ def promocionar():
         Verificá que hayas pegado un enlace válido de Mercado Libre.
         </p>
 
-        <a href="/promocionar">Volver</a>
+        <a href="/promocionar">
+            Volver
+        </a>
         """
 
     item_id = match.group(1).upper()
 
-    api_url = f"https://api.mercadolibre.com/items/{item_id}"
+    if not access_token:
+        return """
+        <h1>🔐 Mercado Libre no está conectado</h1>
+
+        <p>
+        Primero tenés que conectar tu cuenta.
+        </p>
+
+        <a href="/login">
+            Conectar Mercado Libre
+        </a>
+        """
+
+    api_url = (
+        f"https://api.mercadolibre.com/items/{item_id}"
+    )
+
+    api_headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json",
+    }
 
     try:
         response = requests.get(
             api_url,
-            timeout=15
+            headers=api_headers,
+            timeout=15,
         )
 
     except requests.RequestException:
@@ -184,18 +239,24 @@ def promocionar():
         MarketRZ no pudo comunicarse con Mercado Libre.
         </p>
 
-        <a href="/promocionar">Volver</a>
+        <a href="/promocionar">
+            Volver
+        </a>
         """
 
     if response.status_code != 200:
         return f"""
-        <h1>❌ No se pudo obtener el producto</h1>
+        <h1>❌ Mercado Libre rechazó la consulta</h1>
 
         <p>
         Código de respuesta: {response.status_code}
         </p>
 
-        <a href="/promocionar">Volver</a>
+        <pre>{response.text}</pre>
+
+        <a href="/promocionar">
+            Volver
+        </a>
         """
 
     producto = response.json()
@@ -265,13 +326,22 @@ def promocionar():
         {imagen_html}
 
         <h3>💰 Precio</h3>
-        <p>{precio} {moneda}</p>
+
+        <p>
+            {precio} {moneda}
+        </p>
 
         <h3>📦 Condición</h3>
-        <p>{condicion}</p>
+
+        <p>
+            {condicion}
+        </p>
 
         <h3>🏷️ Categoría</h3>
-        <p>{categoria}</p>
+
+        <p>
+            {categoria}
+        </p>
 
         <h3>🔗 Publicación</h3>
 
