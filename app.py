@@ -17,9 +17,9 @@ REDIRECT_URI = os.environ.get("REDIRECT_URI", "https://marketrz-callback.onrende
 # Agregá aquí nuevos productos cuando los generes en Mercado Libre.
 PRODUCTOS = [
     {
-        "nombre": "Producto recomendado de Mercado Libre",
-        "categoria": "celular",
-        "descripcion": "Producto recomendado mediante tu enlace de afiliado.",
+        "nombre": "Televisor recomendado de Mercado Libre",
+        "categoria": "televisor",
+        "descripcion": "Televisor recomendado mediante tu enlace de afiliado.",
         "link": "https://meli.la/1ADMxSm"
     }
 ]
