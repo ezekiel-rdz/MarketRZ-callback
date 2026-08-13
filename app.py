@@ -13,8 +13,10 @@ app = Flask(__name__)
 # CONFIGURACIÓN
 # =========================================================
 
-CLIENT_ID = os.environ.get("6535647082019046")
-CLIENT_SECRET = os.environ.get("yNeC9jzE4rr056hSoXHggWmH5H0TTDyX")
+# Estos son NOMBRES de variables de entorno.
+# Los valores reales se colocan en Render, NO en GitHub.
+CLIENT_ID = os.environ.get("MELI_CLIENT_ID")
+CLIENT_SECRET = os.environ.get("MELI_CLIENT_SECRET")
 
 REDIRECT_URI = os.environ.get(
     "REDIRECT_URI",
@@ -25,7 +27,7 @@ REDIRECT_URI = os.environ.get(
 access_token = None
 
 # PKCE
-code_verifier = secrets.token_urlsafe(64)
+code_verifier = None
 
 
 # =========================================================
@@ -88,11 +90,26 @@ def login():
 
     if not CLIENT_ID:
         return """
-        <h1>❌ Falta CLIENT_ID</h1>
+        <h1>❌ Falta MELI_CLIENT_ID</h1>
+
         <p>
-        Configurá CLIENT_ID en las variables de entorno de Render.
+        Configurá la variable MELI_CLIENT_ID
+        en las variables de entorno de Render.
         </p>
         """
+
+    if not CLIENT_SECRET:
+        return """
+        <h1>❌ Falta MELI_CLIENT_SECRET</h1>
+
+        <p>
+        Configurá la variable MELI_CLIENT_SECRET
+        en las variables de entorno de Render.
+        </p>
+        """
+
+    # Crear un nuevo verifier para cada inicio de sesión
+    code_verifier = secrets.token_urlsafe(64)
 
     code_challenge = crear_code_challenge(
         code_verifier
@@ -111,11 +128,15 @@ def login():
     <!DOCTYPE html>
     <html>
     <head>
+        <title>MarketRZ - Conectando</title>
+
         <meta http-equiv="refresh"
               content="0; url={authorization_url}">
     </head>
 
     <body>
+
+        <h1>🛒 MarketRZ</h1>
 
         <p>
             Redirigiendo a Mercado Libre...
@@ -127,7 +148,7 @@ def login():
 
         <p>
             <a href="{authorization_url}">
-                Hacé clic acá
+                🔐 Hacé clic acá para conectar
             </a>
         </p>
 
@@ -186,12 +207,25 @@ def callback():
 
     if not CLIENT_ID:
         return """
-        <h1>❌ Falta CLIENT_ID</h1>
+        <h1>❌ Falta MELI_CLIENT_ID</h1>
         """
 
     if not CLIENT_SECRET:
         return """
-        <h1>❌ Falta CLIENT_SECRET</h1>
+        <h1>❌ Falta MELI_CLIENT_SECRET</h1>
+        """
+
+    if not code_verifier:
+        return """
+        <h1>❌ Falta el código PKCE</h1>
+
+        <p>
+        Volvé a iniciar la conexión desde el botón de login.
+        </p>
+
+        <a href="/login">
+            🔐 Intentar nuevamente
+        </a>
         """
 
     # =====================================================
