@@ -69,15 +69,16 @@ def crear_code_challenge(verifier):
 
 
 def pagina_base(contenido, titulo="MarketRZ"):
-    return f'''<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><title>{html.escape(titulo)}</title><style>
-:root{{--azul:#3483fa;--azul2:#1257b8;--fondo:#f4f6f8;--texto:#202124;--borde:#e3e7eb}}
-*{{box-sizing:border-box}}body{{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--fondo);color:var(--texto)}}a{{color:inherit}}
-.header{{background:linear-gradient(135deg,#3483fa,#1257b8);color:white;position:sticky;top:0;z-index:10;box-shadow:0 3px 14px #0002}}.header-inner{{max-width:1180px;margin:auto;padding:14px 24px;display:flex;align-items:center;gap:22px}}.logo{{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:800;white-space:nowrap;text-decoration:none}}.logo img{{width:48px;height:48px;object-fit:contain;border-radius:10px;background:#fff;padding:3px;box-shadow:0 2px 8px #0002}}.logo span{{opacity:.85}}.nav{{display:flex;gap:18px;margin-left:auto;font-size:14px}}.nav a{{text-decoration:none;opacity:.95}}
-.main{{max-width:1180px;margin:0 auto;padding:28px 24px 50px}}.hero{{background:linear-gradient(135deg,#fff,#eef5ff);border:1px solid var(--borde);border-radius:22px;padding:34px;margin-bottom:24px}}.hero-brand{{display:flex;align-items:center;gap:14px;margin-bottom:18px}}.hero-brand img{{width:72px;height:72px;object-fit:contain;border-radius:16px;background:#fff;padding:5px;box-shadow:0 3px 12px #0001}}.hero h1{{margin:0 0 10px;font-size:36px}}.hero p{{margin:0 0 22px;color:#59636e;font-size:17px}}.search{{display:flex;gap:10px;width:100%}}.search input{{flex:1;min-width:0;padding:15px 18px;border:1px solid #cfd6dd;border-radius:12px;font-size:16px;outline:none}}.search input:focus{{border-color:var(--azul);box-shadow:0 0 0 3px #3483fa22}}.btn{{display:inline-flex;align-items:center;justify-content:center;padding:14px 20px;border:0;border-radius:12px;background:var(--azul);color:#fff;text-decoration:none;font-weight:700;cursor:pointer}}.btn:hover{{background:var(--azul2)}}
-.section-title{{display:flex;align-items:center;justify-content:space-between;margin:28px 0 14px}}.section-title h2{{margin:0;font-size:22px}}.categories{{display:flex;flex-wrap:wrap;gap:9px}}.category{{background:#fff;border:1px solid var(--borde);border-radius:999px;padding:9px 14px;text-decoration:none;font-size:14px}}.category:hover{{border-color:var(--azul);color:var(--azul2)}}
-.grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}}.card{{background:#fff;border:1px solid var(--borde);border-radius:16px;padding:18px;display:flex;flex-direction:column;min-height:245px;box-shadow:0 3px 12px #0000000b}}.card .icon{{width:48px;height:48px;display:grid;place-items:center;border-radius:13px;background:#edf5ff;font-size:25px;margin-bottom:14px}}.card h3{{margin:0 0 8px;font-size:17px;line-height:1.3}}.card p{{margin:0 0 12px;color:#66717c;font-size:14px;line-height:1.45}}.tag{{color:#3483fa;font-size:12px;font-weight:700;text-transform:uppercase;margin-bottom:8px}}.card .btn{{margin-top:auto;width:100%;padding:11px 14px;font-size:14px}}.footer{{text-align:center;color:#77818b;font-size:13px;padding:28px 20px}}.empty{{background:#fff;border:1px solid var(--borde);border-radius:16px;padding:30px;text-align:center}}
-@media(max-width:900px){{.grid{{grid-template-columns:repeat(2,minmax(0,1fr))}}}}@media(max-width:600px){{.header-inner{{padding:10px 14px}}.logo{{font-size:21px;gap:7px}}.logo img{{width:40px;height:40px}}.nav{{display:none}}.main{{padding:16px 12px 35px}}.hero{{padding:22px 16px;border-radius:17px}}.hero-brand img{{width:58px;height:58px}}.hero h1{{font-size:27px}}.hero p{{font-size:15px}}.search{{flex-direction:column}}.search input,.search .btn{{width:100%}}.grid{{grid-template-columns:1fr;gap:12px}}.card{{min-height:0;padding:16px}}.section-title h2{{font-size:19px}}.categories{{flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px}}.category{{white-space:nowrap}}}}
-</style></head><body><header class="header"><div class="header-inner"><a class="logo" href="/"><img src="/static/logo-marketrz.png" alt="MarketRZ"><span>MarketRZ ⚡</span></a><nav class="nav"><a href="/">Inicio</a><a href="/buscar">Productos</a><a href="/login">Conectar Mercado Libre</a></nav></div></header><main class="main">{contenido}</main><footer class="footer">MarketRZ · Tecnología, productos y oportunidades</footer></body></html>'''
+    return f'''<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>{html.escape(titulo)}</title><style>
+:root{{--azul:#3483fa;--azul2:#1257b8;--fondo:#f5f7fa;--texto:#172033;--muted:#657184;--borde:#e2e8f0;--blanco:#fff;--naranja:#ff9d3d}}
+*{{box-sizing:border-box}}html{{scroll-behavior:smooth}}body{{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--fondo);color:var(--texto)}}a{{color:inherit}}
+.header{{background:linear-gradient(135deg,#3483fa 0%,#1257b8 100%);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 5px 22px #123b7328}}.header-inner{{max-width:1180px;margin:auto;padding:11px 24px;display:flex;align-items:center;gap:28px}}.logo{{display:flex;align-items:center;text-decoration:none}}.logo img{{width:168px;height:52px;object-fit:contain;background:#fff;border-radius:13px;padding:4px 8px;box-shadow:0 4px 14px #001d4a26}}.nav{{display:flex;gap:8px;margin-left:auto;font-size:14px}}.nav a{{text-decoration:none;padding:10px 13px;border-radius:10px;opacity:.96}}.nav a:hover{{background:#ffffff1c}}
+.main{{max-width:1180px;margin:0 auto;padding:30px 24px 60px}}.hero{{position:relative;overflow:hidden;background:linear-gradient(135deg,#ffffff 0%,#edf5ff 100%);border:1px solid var(--borde);border-radius:26px;padding:42px;margin-bottom:30px;box-shadow:0 12px 36px #163b6810}}.hero:after{{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:#3483fa10;right:-90px;top:-100px}}.hero-brand{{display:flex;align-items:center;gap:15px;margin-bottom:24px;position:relative;z-index:1}}.hero-brand img{{width:150px;height:55px;object-fit:contain;border-radius:12px;background:#fff;padding:3px 8px;box-shadow:0 5px 18px #183d6a14}}.hero-brand-copy strong{{display:block;font-size:17px}}.hero-brand-copy span{{display:block;color:var(--muted);font-size:14px;margin-top:4px}}.hero h1{{position:relative;z-index:1;margin:0 0 12px;font-size:42px;line-height:1.12;letter-spacing:-.7px;max-width:780px}}.hero>p{{position:relative;z-index:1;margin:0 0 25px;color:var(--muted);font-size:17px;max-width:700px}}.search{{position:relative;z-index:2;display:flex;gap:10px;width:100%;max-width:900px}}.search input{{flex:1;min-width:0;padding:16px 18px;border:1px solid #cfd8e3;background:#fff;border-radius:13px;font-size:16px;outline:none;box-shadow:0 3px 12px #173b6810}}.search input:focus{{border-color:var(--azul);box-shadow:0 0 0 4px #3483fa1c}}.btn{{display:inline-flex;align-items:center;justify-content:center;padding:14px 20px;border:0;border-radius:12px;background:var(--azul);color:#fff;text-decoration:none;font-weight:700;cursor:pointer;transition:.18s transform,.18s background}}.btn:hover{{background:var(--azul2);transform:translateY(-1px)}}
+.section-title{{display:flex;align-items:center;justify-content:space-between;margin:32px 0 14px}}.section-title h2{{margin:0;font-size:23px;letter-spacing:-.2px}}.section-title a{{color:var(--azul2);font-weight:700;text-decoration:none;font-size:14px}}.categories{{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}}.category{{background:#fff;border:1px solid var(--borde);border-radius:14px;padding:13px 12px;text-decoration:none;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;transition:.18s;box-shadow:0 3px 10px #183d6a08}}.category:hover{{border-color:#a9c9f5;color:var(--azul2);transform:translateY(-2px)}}
+.grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}}.card{{background:#fff;border:1px solid var(--borde);border-radius:18px;padding:18px;display:flex;flex-direction:column;min-height:255px;box-shadow:0 6px 18px #183d6a0b;transition:.18s}}.card:hover{{transform:translateY(-3px);box-shadow:0 12px 26px #183d6a14}}.card .icon{{width:50px;height:50px;display:grid;place-items:center;border-radius:14px;background:#edf5ff;font-size:25px;margin-bottom:15px}}.card h3{{margin:0 0 8px;font-size:16px;line-height:1.35}}.card p{{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.45}}.tag{{color:var(--azul2);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}}.card .btn{{margin-top:auto;width:100%;padding:11px 14px;font-size:14px}}.footer{{text-align:center;color:#7b8797;font-size:13px;padding:28px 20px 38px}}.empty{{background:#fff;border:1px solid var(--borde);border-radius:18px;padding:38px;text-align:center;box-shadow:0 8px 24px #183d6a0b}}
+@media(max-width:1050px){{.categories{{grid-template-columns:repeat(4,minmax(0,1fr))}}.grid{{grid-template-columns:repeat(3,minmax(0,1fr))}}}}
+@media(max-width:760px){{.header-inner{{padding:9px 14px}}.logo img{{width:145px;height:48px}}.nav{{display:none}}.main{{padding:18px 12px 40px}}.hero{{padding:25px 18px;border-radius:20px}}.hero-brand img{{width:132px;height:50px}}.hero h1{{font-size:30px}}.hero>p{{font-size:15px}}.search{{flex-direction:column}}.search input,.search .btn{{width:100%}}.categories{{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}.category{{padding:12px 8px}}.grid{{grid-template-columns:1fr;gap:12px}}.card{{min-height:0;padding:16px}}.section-title h2{{font-size:20px}}}}
+</style></head><body><header class="header"><div class="header-inner"><a class="logo" href="/"><img src="/static/logo-marketrz.svg" alt="MarketRZ"></a><nav class="nav"><a href="/">Inicio</a><a href="/buscar">Productos</a><a href="/login">Conectar Mercado Libre</a></nav></div></header><main class="main">{contenido}</main><footer class="footer">MarketRZ · Tecnología, productos y oportunidades</footer></body></html>'''
 
 
 def icono_categoria(categoria):
@@ -87,7 +88,10 @@ def icono_categoria(categoria):
 def tarjetas_productos(resultados):
     tarjetas = ""
     for p in resultados:
-        nombre = html.escape(p["nombre"]); categoria = html.escape(p["categoria"]); descripcion = html.escape(p["descripcion"]); link = html.escape(p["link"], quote=True)
+        nombre = html.escape(p["nombre"])
+        categoria = html.escape(p["categoria"])
+        descripcion = html.escape(p["descripcion"])
+        link = html.escape(p["link"], quote=True)
         tarjetas += f'<article class="card"><div class="icon">{icono_categoria(p["categoria"])}</div><div class="tag">{categoria}</div><h3>{nombre}</h3><p>{descripcion}</p><a class="btn" href="{link}" target="_blank" rel="noopener noreferrer">Ver producto</a></article>'
     return tarjetas
 
@@ -95,8 +99,17 @@ def tarjetas_productos(resultados):
 @app.route("/")
 def inicio():
     categorias = sorted(set(p["categoria"] for p in PRODUCTOS))
-    botones = "".join(f'<a class="category" href="/buscar?q={html.escape(c, quote=True)}">{icono_categoria(c)} {html.escape(c.title())}</a>' for c in categorias)
-    contenido = f'<section class="hero"><div class="hero-brand"><img src="/static/logo-marketrz.png" alt="Logo MarketRZ"><div><strong>MarketRZ</strong><p style="margin:4px 0 0">Tecnología, productos y oportunidades</p></div></div><h1>Encontrá tu próximo producto en MarketRZ</h1><p>Explorá productos recomendados y accedé directamente a Mercado Libre.</p><form class="search" action="/buscar" method="get"><input name="q" placeholder="¿Qué producto buscás?" autocomplete="off"><button class="btn" type="submit">🔎 Buscar</button></form></section><div class="section-title"><h2>Categorías</h2></div><div class="categories">{botones}</div><div class="section-title"><h2>Productos destacados</h2><a href="/buscar">Ver todos →</a></div><div class="grid">{tarjetas_productos(PRODUCTOS[:8])}</div>'
+    botones = "".join(f'<a class="category" href="/buscar?q={html.escape(c, quote=True)}">{icono_categoria(c)} <span>{html.escape(c.title())}</span></a>' for c in categorias)
+    contenido = f'''<section class="hero">
+<div class="hero-brand"><img src="/static/logo-marketrz.svg" alt="MarketRZ"><div class="hero-brand-copy"><strong>MarketRZ</strong><span>Tecnología, productos y oportunidades</span></div></div>
+<h1>Encontrá tu próximo producto en MarketRZ</h1>
+<p>Explorá productos recomendados, descubrí nuevas opciones y accedé directamente a Mercado Libre.</p>
+<form class="search" action="/buscar" method="get"><input name="q" placeholder="¿Qué producto buscás?" autocomplete="off"><button class="btn" type="submit">🔎 Buscar</button></form>
+</section>
+<div class="section-title"><h2>Explorá por categoría</h2></div>
+<div class="categories">{botones}</div>
+<div class="section-title"><h2>Productos destacados</h2><a href="/buscar">Ver todos →</a></div>
+<div class="grid">{tarjetas_productos(PRODUCTOS[:8])}</div>'''
     return pagina_base(contenido)
 
 
@@ -110,14 +123,15 @@ def login():
     code_verifier = secrets.token_urlsafe(64)
     challenge = crear_code_challenge(code_verifier)
     authorization_url = ("https://auth.mercadolibre.com.ar/authorization?response_type=code" f"&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}" f"&code_challenge={challenge}&code_challenge_method=S256")
-    contenido = f'<section class="hero"><div class="hero-brand"><img src="/static/logo-marketrz.png" alt="Logo MarketRZ"><div><strong>MarketRZ</strong><p style="margin:4px 0 0">Conexión segura</p></div></div><h1>🔐 Conectar Mercado Libre</h1><p>Autorizá MarketRZ para continuar con la integración.</p><a class="btn" href="{html.escape(authorization_url, quote=True)}">Continuar con Mercado Libre</a></section><script>window.location.href={authorization_url!r};</script>'
+    contenido = f'<section class="hero"><h1>🔐 Conectar Mercado Libre</h1><p>Autorizá MarketRZ para continuar con la integración.</p><a class="btn" href="{html.escape(authorization_url, quote=True)}">Continuar con Mercado Libre</a></section><script>window.location.href={authorization_url!r};</script>'
     return pagina_base(contenido, "Conectar Mercado Libre")
 
 
 @app.route("/callback")
 def callback():
     global access_token
-    code = request.args.get("code"); error = request.args.get("error")
+    code = request.args.get("code")
+    error = request.args.get("error")
     if error:
         desc = html.escape(request.args.get("error_description", ""))
         return pagina_base(f'<div class="empty"><h2>❌ Mercado Libre rechazó la autorización</h2><p>Error: {html.escape(error)}</p><pre>{desc}</pre><a class="btn" href="/login">Intentar nuevamente</a></div>', "Error de autorización")
@@ -138,7 +152,7 @@ def callback():
     access_token = token_response.get("access_token")
     if not access_token:
         return pagina_base('<div class="empty"><h2>❌ No se recibió Access Token</h2></div>', "Error de token")
-    return pagina_base('<section class="hero"><div class="hero-brand"><img src="/static/logo-marketrz.png" alt="Logo MarketRZ"><div><strong>MarketRZ</strong><p style="margin:4px 0 0">Mercado Libre conectado</p></div></div><h1>✅ Mercado Libre conectado</h1><p>La autorización fue recibida correctamente.</p><a class="btn" href="/">Volver a MarketRZ</a></section>', "Mercado Libre conectado")
+    return pagina_base('<section class="hero"><h1>✅ Mercado Libre conectado</h1><p>La autorización fue recibida correctamente.</p><a class="btn" href="/">Volver a MarketRZ</a></section>', "Mercado Libre conectado")
 
 
 @app.route("/buscar")
@@ -152,7 +166,7 @@ def buscar():
         contenido = '<div class="empty"><h2>😕 No encontramos ese producto.</h2><p>Probá con otra palabra o explorá las categorías.</p><a class="btn" href="/">Volver al inicio</a></div>'
         return pagina_base(contenido, "Sin resultados")
     titulo = f'Resultados para “{html.escape(consulta)}”' if consulta else "Todos los productos"
-    contenido = f'<section class="hero"><div class="hero-brand"><img src="/static/logo-marketrz.png" alt="Logo MarketRZ"><div><strong>MarketRZ</strong><p style="margin:4px 0 0">Catálogo de productos</p></div></div><h1>{titulo}</h1><p>{len(resultados)} producto(s) disponible(s).</p><form class="search" action="/buscar" method="get"><input name="q" value="{html.escape(consulta)}" placeholder="Buscar producto"><button class="btn" type="submit">🔎 Buscar</button></form></section><div class="grid">{tarjetas_productos(resultados)}</div>'
+    contenido = f'<section class="hero"><h1>{titulo}</h1><p>{len(resultados)} producto(s) disponible(s).</p><form class="search" action="/buscar" method="get"><input name="q" value="{html.escape(consulta)}" placeholder="Buscar producto"><button class="btn" type="submit">🔎 Buscar</button></form></section><div class="grid">{tarjetas_productos(resultados)}</div>'
     return pagina_base(contenido, "Productos MarketRZ")
 
 
