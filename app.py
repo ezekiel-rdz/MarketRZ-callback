@@ -1,3 +1,4 @@
+```python
 import os
 import base64
 import hashlib
@@ -9,141 +10,331 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-CLIENT_ID = "6535647082019046"
-CLIENT_SECRET = "yNeC9jzE4rr056hSoXHggWmH5H0TTDyX"
-REDIRECT_URI = "https://marketrz-callback.onrender.com/callback"
+# =========================================================
+# CONFIGURACIÓN
+# =========================================================
 
-code_verifier = secrets.token_urlsafe(64)
+CLIENT_ID = os.environ.get("6535647082019046")
+CLIENT_SECRET = os.environ.get("yNeC9jzE4rr056hSoXHggWmH5H0TTDyX"
+")
+REDIRECT_URI = os.environ.get(
+    "REDIRECT_URI",
+    "https://marketrz-callback.onrender.com/callback"
+)
 
-# Token temporal de Mercado Libre
+# Token temporal
 access_token = None
 
+# PKCE
+code_verifier = secrets.token_urlsafe(64)
+
+
+# =========================================================
+# PKCE
+# =========================================================
 
 def crear_code_challenge(verifier):
-    digest = hashlib.sha256(verifier.encode("utf-8")).digest()
-    return base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
+    digest = hashlib.sha256(
+        verifier.encode("utf-8")
+    ).digest()
 
+    return base64.urlsafe_b64encode(
+        digest
+    ).decode("utf-8").rstrip("=")
+
+
+# =========================================================
+# INICIO
+# =========================================================
 
 @app.route("/")
 def inicio():
     return """
-    <h1>🛒 MarketRZ</h1>
-
-    <p>El callback está funcionando correctamente.</p>
-
-    <p>
-        <a href="/login">🔐 Conectar Mercado Libre</a>
-    </p>
-
-    <p>
-        <a href="/promocionar">📦 Analizar producto</a>
-    </p>
-    """
-
-
-@app.route("/login")
-def login():
-    challenge = crear_code_challenge(code_verifier)
-
-    url = (
-        "https://auth.mercadolibre.com.ar/authorization"
-        "?response_type=code"
-        f"&client_id={CLIENT_ID}"
-        f"&redirect_uri={REDIRECT_URI}"
-        f"&code_challenge={challenge}"
-        "&code_challenge_method=S256"
-    )
-
-    return f"""
+    <!DOCTYPE html>
     <html>
-        <head>
-            <meta http-equiv="refresh" content="0; url={url}">
-        </head>
+    <head>
+        <title>MarketRZ</title>
+    </head>
 
-        <body>
-            <p>Redirigiendo a Mercado Libre...</p>
-        </body>
+    <body>
+
+        <h1>🛒 MarketRZ</h1>
+
+        <p>El callback está funcionando correctamente.</p>
+
+        <p>
+            <a href="/login">
+                🔐 Conectar Mercado Libre
+            </a>
+        </p>
+
+        <p>
+            <a href="/promocionar">
+                📦 Analizar un producto
+            </a>
+        </p>
+
+    </body>
     </html>
     """
 
 
+# =========================================================
+# LOGIN MERCADO LIBRE
+# =========================================================
+
+@app.route("/login")
+def login():
+
+    global code_verifier
+
+    if not CLIENT_ID:
+        return """
+        <h1>❌ Falta CLIENT_ID</h1>
+        <p>
+        Configurá CLIENT_ID en las variables de entorno de Render.
+        </p>
+        """
+
+    code_challenge = crear_code_challenge(
+        code_verifier
+    )
+
+    authorization_url = (
+        "https://auth.mercadolibre.com.ar/authorization"
+        f"?response_type=code"
+        f"&client_id={CLIENT_ID}"
+        f"&redirect_uri={REDIRECT_URI}"
+        f"&code_challenge={code_challenge}"
+        f"&code_challenge_method=S256"
+    )
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="refresh"
+              content="0; url={authorization_url}">
+    </head>
+
+    <body>
+
+        <p>
+            Redirigiendo a Mercado Libre...
+        </p>
+
+        <p>
+            Si no te redirige automáticamente,
+            <a href="{authorization_url}">
+                hacé clic acá.
+            </a>
+        </p>
+
+    </body>
+    </html>
+    """
+
+
+# =========================================================
+# CALLBACK
+# =========================================================
+
 @app.route("/callback")
 def callback():
+
     global access_token
 
     code = request.args.get("code")
     error = request.args.get("error")
 
+    # -----------------------------------------------------
+    # Mercado Libre devolvió un error
+    # -----------------------------------------------------
+
     if error:
+
+        error_description = request.args.get(
+            "error_description",
+            ""
+        )
+
         return f"""
-        <h1>MarketRZ</h1>
-        <p>Mercado Libre devolvió un error:</p>
-        <p>{error}</p>
+        <h1>❌ Mercado Libre rechazó la autorización</h1>
+
+        <p>
+            Error: {error}
+        </p>
+
+        <pre>{error_description}</pre>
+
+        <p>
+            <a href="/">
+                Volver a MarketRZ
+            </a>
+        </p>
         """
+
+    # -----------------------------------------------------
+    # No recibimos código
+    # -----------------------------------------------------
 
     if not code:
+
         return """
-        <h1>MarketRZ</h1>
-        <p>No se recibió ningún código de autorización.</p>
+        <h1>❌ No se recibió el código de autorización</h1>
+
+        <p>
+        Mercado Libre no envió el parámetro "code".
+        </p>
+
+        <a href="/login">
+            Intentar nuevamente
+        </a>
         """
 
-    data = {
+    if not CLIENT_ID:
+        return """
+        <h1>❌ Falta CLIENT_ID</h1>
+        """
+
+    if not CLIENT_SECRET:
+        return """
+        <h1>❌ Falta CLIENT_SECRET</h1>
+        """
+
+    # -----------------------------------------------------
+    # Solicitar Access Token
+    # -----------------------------------------------------
+
+    token_url = "https://api.mercadolibre.com/oauth/token"
+
+    token_data = {
         "grant_type": "authorization_code",
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
         "code": code,
         "redirect_uri": REDIRECT_URI,
-        "code_verifier": code_verifier,
+        "code_verifier": code_verifier
     }
 
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/x-www-form-urlencoded",
-    }
+    try:
 
-    response = requests.post(
-        "https://api.mercadolibre.com/oauth/token",
-        data=data,
-        headers=headers,
-        timeout=30,
-    )
+        response = requests.post(
+            token_url,
+            data=token_data,
+            timeout=15
+        )
+
+    except requests.RequestException as e:
+
+        return f"""
+        <h1>❌ Error de conexión</h1>
+
+        <p>
+        No se pudo comunicar con Mercado Libre.
+        </p>
+
+        <pre>{str(e)}</pre>
+        """
+
+    # -----------------------------------------------------
+    # Error al obtener token
+    # -----------------------------------------------------
 
     if response.status_code != 200:
+
         return f"""
         <h1>❌ Error al obtener el token</h1>
-        <p>Código HTTP: {response.status_code}</p>
+
+        <p>
+            Código HTTP:
+            {response.status_code}
+        </p>
+
         <pre>{response.text}</pre>
+
+        <p>
+            <a href="/login">
+                Intentar nuevamente
+            </a>
+        </p>
         """
 
-    token_data = response.json()
+    # -----------------------------------------------------
+    # Procesar respuesta
+    # -----------------------------------------------------
 
-    access_token = token_data.get("access_token")
+    try:
+
+        token_data_response = response.json()
+
+    except ValueError:
+
+        return """
+        <h1>❌ Mercado Libre devolvió una respuesta inválida</h1>
+        """
+
+    access_token = token_data_response.get(
+        "access_token"
+    )
 
     if not access_token:
+
         return """
-        <h1>❌ No se recibió el token</h1>
+        <h1>❌ No se recibió el Access Token</h1>
+
+        <pre>
+Mercado Libre no devolvió access_token.
+        </pre>
         """
 
+    # -----------------------------------------------------
+    # ÉXITO
+    # -----------------------------------------------------
+
     return """
-    <h1>✅ Mercado Libre conectado correctamente</h1>
+    <!DOCTYPE html>
+    <html>
 
-    <p>
-        MarketRZ recibió la autorización correctamente.
-    </p>
+    <head>
+        <title>MarketRZ conectado</title>
+    </head>
 
-    <p>
-        <a href="/promocionar">
-            📦 Analizar un producto
-        </a>
-    </p>
+    <body>
+
+        <h1>✅ Mercado Libre conectado correctamente</h1>
+
+        <p>
+            MarketRZ recibió la autorización correctamente.
+        </p>
+
+        <p>
+            <a href="/promocionar">
+                📦 Analizar un producto
+            </a>
+        </p>
+
+    </body>
+
+    </html>
     """
 
+
+# =========================================================
+# ANALIZAR PRODUCTO
+# =========================================================
 
 @app.route("/promocionar", methods=["GET", "POST"])
 def promocionar():
 
+    # -----------------------------------------------------
+    # Mostrar formulario
+    # -----------------------------------------------------
+
     if request.method == "GET":
+
         return """
+        <!DOCTYPE html>
         <html>
 
         <head>
@@ -154,22 +345,30 @@ def promocionar():
 
             <h1>🛒 MarketRZ</h1>
 
-            <h2>Analizar producto de Mercado Libre</h2>
+            <h2>
+                Analizar producto de Mercado Libre
+            </h2>
 
             <form method="POST">
 
+                <label>
+                    Pegá el enlace del producto:
+                </label>
+
+                <br><br>
+
                 <input
-                    type="url"
+                    type="text"
                     name="url"
-                    placeholder="Pegá aquí el enlace de Mercado Libre"
-                    style="width:500px; padding:10px;"
+                    placeholder="https://www.mercadolibre.com.ar/..."
+                    style="width: 400px;"
                     required
                 >
 
                 <br><br>
 
                 <button type="submit">
-                    🔍 Analizar producto
+                    🔎 Analizar producto
                 </button>
 
             </form>
@@ -179,7 +378,38 @@ def promocionar():
         </html>
         """
 
-    url = request.form.get("url", "").strip()
+    # -----------------------------------------------------
+    # Verificar conexión
+    # -----------------------------------------------------
+
+    if not access_token:
+
+        return """
+        <h1>🔐 Mercado Libre no está conectado</h1>
+
+        <p>
+            Primero tenés que conectar tu cuenta.
+        </p>
+
+        <p>
+            <a href="/login">
+                🔐 Conectar Mercado Libre
+            </a>
+        </p>
+        """
+
+    # -----------------------------------------------------
+    # Obtener URL
+    # -----------------------------------------------------
+
+    url = request.form.get(
+        "url",
+        ""
+    ).strip()
+
+    # -----------------------------------------------------
+    # Buscar ID MLA
+    # -----------------------------------------------------
 
     match = re.search(
         r"(MLA\d+)",
@@ -188,11 +418,17 @@ def promocionar():
     )
 
     if not match:
+
         return """
-        <h1>❌ No pude encontrar la publicación</h1>
+        <h1>❌ Enlace no válido</h1>
 
         <p>
-        Verificá que hayas pegado un enlace válido de Mercado Libre.
+            No encontramos un ID de publicación
+            de Mercado Libre.
+        </p>
+
+        <p>
+            Verificá que hayas pegado un enlace válido.
         </p>
 
         <a href="/promocionar">
@@ -202,18 +438,9 @@ def promocionar():
 
     item_id = match.group(1).upper()
 
-    if not access_token:
-        return """
-        <h1>🔐 Mercado Libre no está conectado</h1>
-
-        <p>
-        Primero tenés que conectar tu cuenta.
-        </p>
-
-        <a href="/login">
-            Conectar Mercado Libre
-        </a>
-        """
+    # -----------------------------------------------------
+    # API DEL PRODUCTO
+    # -----------------------------------------------------
 
     api_url = (
         f"https://api.mercadolibre.com/items/{item_id}"
@@ -221,45 +448,81 @@ def promocionar():
 
     api_headers = {
         "Authorization": f"Bearer {access_token}",
-        "Accept": "application/json",
+        "Accept": "application/json"
     }
 
+    # -----------------------------------------------------
+    # Consultar producto
+    # -----------------------------------------------------
+
     try:
+
         response = requests.get(
             api_url,
             headers=api_headers,
-            timeout=15,
+            timeout=15
         )
 
-    except requests.RequestException:
-        return """
+    except requests.RequestException as e:
+
+        return f"""
         <h1>❌ Error de conexión</h1>
 
         <p>
-        MarketRZ no pudo comunicarse con Mercado Libre.
+            MarketRZ no pudo comunicarse con Mercado Libre.
         </p>
+
+        <pre>{str(e)}</pre>
 
         <a href="/promocionar">
             Volver
         </a>
         """
 
+    # -----------------------------------------------------
+    # Error API
+    # -----------------------------------------------------
+
     if response.status_code != 200:
+
         return f"""
         <h1>❌ Mercado Libre rechazó la consulta</h1>
 
         <p>
-        Código de respuesta: {response.status_code}
+            Código de respuesta:
+            {response.status_code}
         </p>
 
         <pre>{response.text}</pre>
 
-        <a href="/promocionar">
-            Volver
-        </a>
+        <p>
+            <a href="/promocionar">
+                Volver
+            </a>
+        </p>
         """
 
-    producto = response.json()
+    # -----------------------------------------------------
+    # Convertir JSON
+    # -----------------------------------------------------
+
+    try:
+
+        producto = response.json()
+
+    except ValueError:
+
+        return """
+        <h1>❌ Respuesta inválida</h1>
+
+        <p>
+        Mercado Libre no devolvió JSON válido.
+        </p>
+        """
+
+    # -----------------------------------------------------
+    # Datos del producto
+    # -----------------------------------------------------
 
     titulo = producto.get(
         "title",
@@ -286,44 +549,58 @@ def promocionar():
         "No disponible"
     )
 
-    imagen = ""
-
-    pictures = producto.get(
-        "pictures",
-        []
+    permalink = producto.get(
+        "permalink",
+        url
     )
 
-    if pictures:
-        imagen = (
-            pictures[0].get("secure_url")
-            or pictures[0].get("url", "")
-        )
+    thumbnail = producto.get(
+        "thumbnail"
+    )
+
+    # -----------------------------------------------------
+    # Imagen
+    # -----------------------------------------------------
 
     imagen_html = ""
 
-    if imagen:
+    if thumbnail:
+
         imagen_html = f"""
-        <img
-            src="{imagen}"
-            width="300"
-            alt="Producto"
-        >
+        <p>
+            <img
+                src="{thumbnail}"
+                width="300"
+                alt="Producto"
+            >
+        </p>
         """
 
+    # -----------------------------------------------------
+    # Mostrar producto
+    # -----------------------------------------------------
+
     return f"""
+    <!DOCTYPE html>
     <html>
 
     <head>
-        <title>MarketRZ - Producto</title>
+        <title>MarketRZ - Resultado</title>
     </head>
 
     <body>
 
         <h1>🛒 MarketRZ</h1>
 
-        <h2>{titulo}</h2>
+        <h2>✅ Producto encontrado</h2>
 
         {imagen_html}
+
+        <h3>📌 Título</h3>
+
+        <p>
+            {titulo}
+        </p>
 
         <h3>💰 Precio</h3>
 
@@ -346,19 +623,18 @@ def promocionar():
         <h3>🔗 Publicación</h3>
 
         <p>
-            <a
-                href="{url}"
-                target="_blank"
-            >
-                Ver producto en Mercado Libre
+            <a href="{permalink}" target="_blank">
+                Ver publicación en Mercado Libre
             </a>
         </p>
 
-        <br>
+        <hr>
 
-        <a href="/promocionar">
-            🔄 Analizar otro producto
-        </a>
+        <p>
+            <a href="/promocionar">
+                🔎 Analizar otro producto
+            </a>
+        </p>
 
     </body>
 
@@ -366,8 +642,21 @@ def promocionar():
     """
 
 
+# =========================================================
+# INICIAR SERVIDOR
+# =========================================================
+
 if __name__ == "__main__":
+
+    port = int(
+        os.environ.get(
+            "PORT",
+            5000
+        )
+    )
+
     app.run(
         host="0.0.0.0",
-        port=10000
+        port=port
     )
+```
